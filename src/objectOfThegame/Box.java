@@ -10,15 +10,19 @@ public class Box {
 
 	/**
 	 * Constractor of the Box
-	 * @param p1- the up and right point of the Box
-	 * @param p2- the down and left point of the Box
 	 */
 
 	public Box(String []arr)
 	{
 		pointDown=new Point3D(Double.parseDouble(arr[2]),Double.parseDouble(arr[3]),Double.parseDouble(arr[4]));
 		pointTop=new Point3D(Double.parseDouble(arr[5]),Double.parseDouble(arr[6]),Double.parseDouble(arr[7]));
-		pointStart=new Point3D(pointDown.x(),pointTop.y());
+		pointStart=new Point3D(pointTop.x(),pointDown.y());
+	}
+	public Box(Box b)
+	{
+		pointDown=b.getPointDown();
+		pointTop=b.getPointTop();
+		pointStart=b.getPointStart();
 	}
 	public Point3D getPointTop()
 	{
@@ -41,8 +45,8 @@ public class Box {
 	public int getWidth(int width, int height)
 	{
 		Point3D pixPD=map.gpsToPix(width, height, pointDown);
-		Point3D pixPT=map.gpsToPix(width, height, pointDown);
-		return (int)(pixPT.x()-pixPD.x());
+		Point3D pixPT=map.gpsToPix(width, height, pointTop);
+		return (int)(pixPD.x()-pixPT.x());
 	}
 	/**
 	 * return the height that get from this rectangle
@@ -53,7 +57,7 @@ public class Box {
 	public int gethieht(int width, int height)
 	{
 		Point3D pixPD=map.gpsToPix(width, height, pointDown);
-		Point3D pixPT=map.gpsToPix(width, height, pointDown);
-		return (int)(pixPD.y()-pixPT.y());
+		Point3D pixPT=map.gpsToPix(width, height,pointTop);
+		return (int)(pixPT.y()-pixPD.y());
 	}
 }

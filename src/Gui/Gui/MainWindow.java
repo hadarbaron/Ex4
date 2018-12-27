@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -40,10 +41,11 @@ public class MainWindow extends JFrame implements MouseListener{
 	public BufferedImage myImage;
 	int x = -1;
 	int y = -1;
+	Me me=new Me (32.101898,35.202369);
 	Play play1=null;
 	BufferedImage img2 = null;
 	BufferedImage img1 = null;
-
+	double angal=0;
 	boolean isGamer=true;//to know if press packman or fruit
 	boolean entercsv=false;//if the game load a csv
 	boolean endgame=false;//if the game is end
@@ -63,7 +65,7 @@ public class MainWindow extends JFrame implements MouseListener{
 	}
 	private void initGUI() 
 	{ 
-		//*******puting all the item***********
+		//**puting all the item****
 		MenuBar menuBar = new MenuBar();
 
 		Menu File = new Menu("FILE");
@@ -79,14 +81,15 @@ public class MainWindow extends JFrame implements MouseListener{
 		gameAction.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				game=true;
+				play1.start();
 				playRefresh();
-
 			}
 		});
 		MenuItem initplace = new MenuItem("INIT PLACE");
 		initplace.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				initgame=true;	
+
 			}
 		});
 		menuBar.add(File);
@@ -95,25 +98,102 @@ public class MainWindow extends JFrame implements MouseListener{
 		setMenuBar(menuBar);
 		gameaction.add(gameAction);
 		gameaction.add(initplace);
-		//******end of items***********
+		//***end of items****
 
-		//*********reading pictures**************
+		//****reading pictures*****
 		try {
 			myImage = ImageIO.read(new File("Ariel1.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		//************end of reading pictures*******************
+		//*****end of reading pictures******
 		this.setSize(myImage.getWidth(),myImage.getHeight());
 	}
-	//******************paint**********************
+	//*******paint*******
 	public void paint(Graphics g)
 	{
 		g.drawImage(myImage,0 , 0,getWidth(),getHeight(), this);
-		//********painting the game**********************
+		//************draw the box****************************
+
+		if (boxlist!=null) 
+		{ 
+			Iterator<Box> itB=boxlist.iterator(); 
+			while(itB.hasNext())
+			{
+				Box newB=new Box(itB.next());
+				double disx=newB.getWidth(getWidth(), getHeight());
+				double disy=newB.gethieht(getWidth(),getHeight());
+				Point3D pstart=map.gpsToPix(getWidth(),getHeight(),newB.getPointStart());
+				g.setColor(Color.BLACK); g.fillRect((int) pstart.y(), (int)pstart.x(), (int)disy ,(int)disx); 
+			}
+		}
+		//***painting the packmans*******************
+		if(packmanlist!=null) 
+		{
+			for (int i=0;i<packmanlist.size();i++)
+			{
+				Point3D p=map.gpsToPix(getWidth(), getHeight(), packmanlist.get(i).getPoint());
+				g.setColor(Color.YELLOW);
+				g.fillOval(p.iy(), p.ix(), 20,20);
+			}
+		}
+		//*****painting the fruits********************
+		if(fruitlist!=null) 
+		{
+
+			for (int i=0;i<fruitlist.size();i++)
+			{
+				Point3D p=map.gpsToPix(getWidth(), getHeight(), fruitlist.get(i).getPoint());
+				g.setColor(Color.pink);
+				g.fillOval(p.iy(), p.ix(), 15,15);
+
+			}	
+		}
+		//*******painting the ghosts****
+		if (ghostlist!=null)
+		{
+			for (int i=0;i<ghostlist.size();i++)
+			{
+
+				Point3D p=map.gpsToPix(getWidth(), getHeight(), ghostlist.get(i).getGpsPoint());
+				g.setColor(Color.RED);
+				g.fillOval(p.iy(), p.ix(), 15,15);
+
+			}
+		}
+		//********painting the me********************
+		if (game) 
+		{
+			String []arr=play1.getBoard().iterator().next().split(",");//founding the rotate 
+			me=new Me(arr);
+		}
+		Point3D p=map.gpsToPix(getWidth(), getHeight(),me.getMe());
+		g.setColor(Color.green);
+		System.out.println("me");
+		g.fillOval(p.iy(), p.ix(), 25,25);
+		try {
+			Thread.sleep(20);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (game)
+		{
+			play1.rotate(angal);
+			playRefresh();
+		}
+		if(game)
+		{
+			if(play1.isRuning()==false)
+				game=false;
+		}
 	}
 
+
+	/**
+	 * reading from the csv
+	 */
 	public void readFileDialog() {
 		entercsv=true;
 		FileDialog fd = new FileDialog(this, "Open text file", FileDialog.LOAD);
@@ -132,6 +212,7 @@ public class MainWindow extends JFrame implements MouseListener{
 		System.out.println(fileName);
 		play1 = new Play("Data/"+fileName);
 		play1.setIDs(208761452, 316148842);
+		playRefresh();
 	}
 
 	/**
@@ -139,6 +220,10 @@ public class MainWindow extends JFrame implements MouseListener{
 	 */
 	public void playRefresh()
 	{
+		packmanlist = new ArrayList<Packman>();
+		fruitlist= new ArrayList<Fruit>();
+		ghostlist= new ArrayList<ghost>();
+		boxlist= new ArrayList<Box> ();
 		ArrayList<String> board_data = play1.getBoard();
 		for(int i=0;i<board_data.size();i++) 
 		{
@@ -154,9 +239,10 @@ public class MainWindow extends JFrame implements MouseListener{
 				break;
 			}
 			case "F": 
-			{Fruit fruit=new Fruit (csvLine);
-			fruitlist.add(fruit);
-			break;
+			{
+				Fruit fruit=new Fruit (csvLine);
+				fruitlist.add(fruit);
+				break;
 			}
 			case "G":
 			{
@@ -164,7 +250,6 @@ public class MainWindow extends JFrame implements MouseListener{
 				ghostlist.add(ghost);
 				break;
 			}
-
 			case "P": 
 			{
 				Packman packman=new Packman(csvLine);
@@ -184,17 +269,26 @@ public class MainWindow extends JFrame implements MouseListener{
 		{
 			Point3D p=map.pixToGps(getWidth(), getHeight(), new Point3D (x,y));
 			play1.setInitLocation(p.x(),p.y());
+			me.setPoint(p);
 			initgame=false;
+			repaint();
 		}
 		if (game)
 		{
 			String []arr=play1.getBoard().iterator().next().split(",");//founding the rotate 
-			Me me=new Me(arr);
+			me=new Me(arr);
 			Point3D p=map.gpsToPix(getWidth(), getHeight(), me.getMe());
-			double angal=map.angal(getWidth(), getHeight(),p, new Point3D(x,y));
+			Point3D z=new Point3D (p.y(),p.x());
+			System.out.println(z);
+			angal=map.angal(getWidth(), getHeight(),z, new Point3D(x,y));
+			System.out.println("angalllllllllll"+ angal);
 			play1.rotate(angal);
+
 		}
+
+
 	}
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		// TODO Auto-generated method stub
