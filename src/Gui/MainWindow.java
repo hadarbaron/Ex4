@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 
 //import org.omg.PortableServer.THREAD_POLICY_ID;
 import Geom.Point3D;
+import Graph.Graph_example;
 import Robot.Play;
 import objectOfThegame.Box;
 import objectOfThegame.Fruit;
@@ -39,6 +40,7 @@ import objectOfThegame.ghost;
 
 public class MainWindow extends JFrame implements MouseListener{
 	public BufferedImage myImage;
+	Point3D [] pp;
 	int x = -1;
 	int y = -1;
 	Me me=new Me (32.101898,35.202369);
@@ -89,7 +91,6 @@ public class MainWindow extends JFrame implements MouseListener{
 		initplace.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				initgame=true;	
-
 			}
 		});
 		menuBar.add(File);
@@ -125,7 +126,7 @@ public class MainWindow extends JFrame implements MouseListener{
 				double disx=newB.getWidth(getWidth(), getHeight());
 				double disy=newB.gethieht(getWidth(),getHeight());
 				Point3D pstart=map.gpsToPix(getWidth(),getHeight(),newB.getPointStart());
-				g.setColor(Color.BLACK); g.fillRect((int) pstart.y(), (int)pstart.x(), (int)disy ,(int)disx); 
+				g.setColor(Color.black); g.fillRect((int) pstart.y(), (int)pstart.x(), (int)disy ,(int)disx); 
 			}
 		}
 		//***painting the packmans*******************
@@ -162,6 +163,16 @@ public class MainWindow extends JFrame implements MouseListener{
 
 			}
 		}
+		//**********painting the limit of the boxes/*******
+		if (pp!=null)
+		{
+			for (int i=0;i<pp.length;i++)
+			{
+				Point3D p= pp[i];
+				g.setColor(Color.green);
+				g.fillOval(p.iy(),p.ix(),5,5);	
+			}
+		}
 		//********painting the me********************
 		if (game) 
 		{
@@ -170,7 +181,6 @@ public class MainWindow extends JFrame implements MouseListener{
 		}
 		Point3D p=map.gpsToPix(getWidth(), getHeight(),me.getMe());
 		g.setColor(Color.green);
-		System.out.println("me");
 		g.fillOval(p.iy(), p.ix(), 25,25);
 		try {
 			Thread.sleep(20);
@@ -213,6 +223,7 @@ public class MainWindow extends JFrame implements MouseListener{
 		play1 = new Play("Data/"+fileName);
 		play1.setIDs(208761452, 316148842);
 		playRefresh();
+
 	}
 
 	/**
@@ -258,6 +269,8 @@ public class MainWindow extends JFrame implements MouseListener{
 			}
 			}
 		}
+		Graph_example graph=new Graph_example (boxlist);
+		pp=graph.tachat(fruitlist.get(0), me);
 		repaint();
 	}
 	@Override
