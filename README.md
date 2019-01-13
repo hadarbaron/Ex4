@@ -1,5 +1,6 @@
 # packmen game
 
+ by Hadar and Shira Baron
 ## the Purpose of the game:
 Fruit: Bring points
 Pacman: Try to eat as many fruits as possible
