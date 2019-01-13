@@ -20,6 +20,9 @@ The game selects its player's initial position. And runs the game.
 With the mouse it selects an angle of the player and changes the direction in which the player moves.
 And with the help of the mouse navigates towards the fruit and escapes from the winds
 
+
+### how to select  player's initial position
+
 ## The automatic game:
 The game selects a starting location and activates the algorithm.
 The algorithm will try to eat the fruit and escape from the winds
