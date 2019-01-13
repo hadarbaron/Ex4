@@ -23,6 +23,10 @@ And with the help of the mouse navigates towards the fruit and escapes from the 
 
 ### how to select  player's initial position
 
+#### how to load a csv game
+
+![importcsv](https://user-images.githubusercontent.com/44767033/51089232-849b6d80-1772-11e9-8501-ddde36115793.png)
+
 ## The automatic game:
 The game selects a starting location and activates the algorithm.
 The algorithm will try to eat the fruit and escape from the winds
