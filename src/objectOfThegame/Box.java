@@ -1,6 +1,7 @@
 package objectOfThegame;
 
 import Geom.Point3D;
+import Graph.newmap;
 import Gui.map;
 
 public class Box {
@@ -12,12 +13,9 @@ public class Box {
 	private int limXright;
 	private int limYup;
 	private int limYdown;
-
-
 	/**
 	 * Constractor of the Box
 	 */
-
 	public Box(String []arr)
 	{
 		pointDown=new Point3D(Double.parseDouble(arr[2]),Double.parseDouble(arr[3]),Double.parseDouble(arr[4]));
@@ -28,7 +26,6 @@ public class Box {
 		 limYup=map.gpsToPix(1433, 642, pointTop).ix()+1;
 		 limXright=map.gpsToPix(1433, 642, pointTop).iy()-1;
 		limXleft=map.gpsToPix(1433, 642, pointDown).iy()+1;
-		
 	}
 	public int getLimXleft() {
 		return limXleft;
@@ -75,16 +72,14 @@ public class Box {
 				return false;
 			}
 		return true;
-
 	}
 	public boolean inTheBoxP (Point3D pointInP)
 	{
-		Point3D TopInp=map.gpsToPix(1433, 642, pointTop);
-		Point3D downInp=map.gpsToPix(1433, 642, pointDown);
-		if (pointInP.iy()<TopInp.iy()&&pointInP.iy()>downInp.iy())
-			if (pointInP.ix()<downInp.ix()&&pointInP.ix()>TopInp.ix())
+		Point3D TopInp=newmap.gpsToPix(1433, 642, pointTop);
+		Point3D downInp=newmap.gpsToPix(1433, 642, pointDown);
+		if (pointInP.ix()<TopInp.ix()&&pointInP.ix()>downInp.ix())
+			if (pointInP.iy()<downInp.iy()&&pointInP.iy()>TopInp.iy())
 			{
-
 				return false;
 			}
 		return true;

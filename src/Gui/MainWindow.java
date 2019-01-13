@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -19,17 +20,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-
-//import org.omg.PortableServer.THREAD_POLICY_ID;
 import Geom.Point3D;
-import Graph.Graph_example;
+import Graph.algo;
+import Graph.newmap;
+import Graph.pathPoint;
 import Robot.Play;
 import objectOfThegame.Box;
 import objectOfThegame.Fruit;
@@ -43,6 +43,7 @@ public class MainWindow extends JFrame implements MouseListener{
 	Point3D [] pp;
 	int x = -1;
 	int y = -1;
+	algo algo;
 	Me me=new Me (32.101898,35.202369);
 	Play play1=null;
 	BufferedImage img2 = null;
@@ -54,6 +55,7 @@ public class MainWindow extends JFrame implements MouseListener{
 	//if the game is alive
 	//boolean gameAction=false;
 	boolean game=false;
+	boolean gameAuto=false;
 	boolean initgame=false;
 	ArrayList<Packman> packmanlist = null;
 	ArrayList<Fruit> fruitlist= null;
@@ -87,6 +89,14 @@ public class MainWindow extends JFrame implements MouseListener{
 				playRefresh();
 			}
 		});
+		MenuItem startAuto = new MenuItem("STARTAuto");
+		startAuto.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				gameAuto=true;
+				play1.start();
+				automaticMod();
+			}
+		});
 		MenuItem initplace = new MenuItem("INIT PLACE");
 		initplace.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -95,6 +105,7 @@ public class MainWindow extends JFrame implements MouseListener{
 		});
 		menuBar.add(File);
 		menuBar.add(gameaction);
+		gameaction.add(startAuto);
 		File.add(item2);
 		setMenuBar(menuBar);
 		gameaction.add(gameAction);
@@ -141,15 +152,20 @@ public class MainWindow extends JFrame implements MouseListener{
 		}
 		//*****painting the fruits********************
 		if(fruitlist!=null) 
+		{Point3D p=null;
+		if (fruitlist.size()>0)
 		{
+			p=map.gpsToPix(getWidth(), getHeight(), fruitlist.get(0).getPoint());
+			g.setColor(Color.green);
+			g.fillOval(p.iy(), p.ix(), 15,15);
+		}
+		for (int i=1;i<fruitlist.size();i++)
+		{
+			p=map.gpsToPix(getWidth(), getHeight(), fruitlist.get(i).getPoint());
+			g.setColor(Color.pink);
+			g.fillOval(p.iy(), p.ix(), 15,15);
 
-			for (int i=0;i<fruitlist.size();i++)
-			{
-				Point3D p=map.gpsToPix(getWidth(), getHeight(), fruitlist.get(i).getPoint());
-				g.setColor(Color.pink);
-				g.fillOval(p.iy(), p.ix(), 15,15);
-
-			}	
+		}	
 		}
 		//*******painting the ghosts****
 		if (ghostlist!=null)
@@ -163,18 +179,10 @@ public class MainWindow extends JFrame implements MouseListener{
 
 			}
 		}
-		//**********painting the limit of the boxes/*******
-		if (pp!=null)
-		{
-			for (int i=0;i<pp.length;i++)
-			{
-				Point3D p= pp[i];
-				g.setColor(Color.green);
-				g.fillOval(p.iy(),p.ix(),5,5);	
-			}
-		}
 		//********painting the me********************
-		if (game) 
+
+
+		if (game||gameAuto) 
 		{
 			String []arr=play1.getBoard().iterator().next().split(",");//founding the rotate 
 			me=new Me(arr);
@@ -185,22 +193,30 @@ public class MainWindow extends JFrame implements MouseListener{
 		try {
 			Thread.sleep(20);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		if(game||gameAuto)
+		{
+			if(play1.isRuning()==false)
+			{
+				game=false;
+				gameAuto=false;
+				g.setColor(Color.black);
+				Graphics2D _paper2D=(Graphics2D)g;
+				_paper2D.setStroke(new BasicStroke(6F));
+				g.drawString(play1.getStatistics(), 1000, 400);
+			}
 		}
 		if (game)
 		{
-			play1.rotate(angal);
+			play1.rotate(getAngle());
 			playRefresh();
 		}
-		if(game)
+		if(gameAuto)
 		{
-			if(play1.isRuning()==false)
-				game=false;
+			automaticMod();
 		}
 	}
-
-
 	/**
 	 * reading from the csv
 	 */
@@ -222,6 +238,7 @@ public class MainWindow extends JFrame implements MouseListener{
 		System.out.println(fileName);
 		play1 = new Play("Data/"+fileName);
 		play1.setIDs(208761452, 316148842);
+		repaint();
 		playRefresh();
 
 	}
@@ -269,12 +286,12 @@ public class MainWindow extends JFrame implements MouseListener{
 			}
 			}
 		}
-		Graph_example graph=new Graph_example (boxlist);
-		pp=graph.tachat(fruitlist.get(0), me);
 		repaint();
 	}
+
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(MouseEvent e) 
+	{
 		// TODO Auto-generated method stub
 		x=e.getX();
 		y=e.getY();
@@ -294,12 +311,35 @@ public class MainWindow extends JFrame implements MouseListener{
 			Point3D z=new Point3D (p.y(),p.x());
 			System.out.println(z);
 			angal=map.angal(getWidth(), getHeight(),z, new Point3D(x,y));
-			System.out.println("angalllllllllll"+ angal);
-			play1.rotate(angal);
-
+			setAngle(angal);
 		}
+	}
+/**
+ * the function used the class algo and calculate the angal and rotate it in the end
+ */
+	public void automaticMod()
+	{
+		algo=new algo(boxlist);
+		algo.getPathP2F(me, fruitlist.get(0));
+		System.out.println("hadar"+me.getMe());
+		Point3D st=	algo.boazALgo();
+		System.out.println(st);
+		//		String []arr=play1.getBoard().iterator().next().split(",");//founding the rotate 
+		//		me=new Me(arr);
+		Point3D fake=map.gpsToPix(getWidth(), getHeight(), me.getMe());
+		Point3D z=new Point3D (fake.y(),fake.x());
+		angal=map.angal(getWidth(), getHeight(),z, new Point3D(st));
+		play1.rotate(angal);
+		playRefresh();
+	}
+	public double getAngle()
+	{
+		return angal;
+	}
 
-
+	public void setAngle(double angle)
+	{
+		this.angal = angle;
 	}
 
 	@Override
