@@ -23,7 +23,7 @@ And with the help of the mouse navigates towards the fruit and escapes from the 
 
 ### how to select  player's initial position
 
-#### how to load a csv game
+### how to load a csv game
 
 ![importcsv](https://user-images.githubusercontent.com/44767033/51089232-849b6d80-1772-11e9-8501-ddde36115793.png)
 
